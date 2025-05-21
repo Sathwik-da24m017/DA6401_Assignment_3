@@ -52,25 +52,27 @@ dakshina_dataset_v1.0/te/lexicons/
 
 ## How to Run the Project
 
-### Option 1: Use Jupyter Notebook
+You can complete the entire pipeline using either of the following two approaches:
 
-Use `main.ipynb` to run the full assignment in a step-by-step, interactive manner. It includes:
-- Data preprocessing
-- Training (vanilla and attention)
-- Evaluation
-- Static and interactive attention visualization
+### Option 1: Run All Tasks Using Jupyter Notebook
 
-This is the recommended mode if you want to demonstrate each step manually.
+Open `main.ipynb` and execute the cells in order. This notebook walks through all major stages:
+- Data preprocessing and tokenization
+- Model training (vanilla and attention)
+- Evaluation on the test set
+- Visualization (static heatmaps and interactive HTML viewers)
 
-### Option 2: Use Python Scripts
+This is suitable for thorough understanding and debugging.
 
-For CLI automation, use the modular `.py` files:
+### Option 2: Use Python Scripts for Modular Execution
 
-- `train_vanilla.py` or `train_attention.py` for training
-- `evaluate.py` for test prediction
-- `visualize.py` for generating heatmaps
-- `interactive_vis.py` for generating HTML attention explorers
-- `main.py` for running the full pipeline from terminal
+If you prefer running components via terminal, use the modular `.py` scripts:
+
+- `train_vanilla.py` or `train_attention.py` — model training
+- `evaluate.py` — test prediction and accuracy logging
+- `visualize.py` — attention heatmap generation
+- `interactive_vis.py` — interactive HTML export
+- `main.py` — unified script to train, evaluate, and visualize with CLI flags
 
 Example usage:
 
@@ -156,8 +158,9 @@ This will produce an HTML file with token-level hoverable highlights. You can em
 
 ## Notes
 
-- The attention visualizations only apply to models trained with attention mechanisms.
+- Attention visualizations are applicable only to models trained with attention.
 - Accuracy is computed as the number of exact match predictions over total predictions.
-- Models are saved automatically as `best_model.pth` or `best_model_attn.pth` during training.
+- Model checkpoints are saved as `best_model.pth` or `best_model_attn.pth` during training.
+
 
 
