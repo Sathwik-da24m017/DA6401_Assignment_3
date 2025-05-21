@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Attention Connectivity Visualization</title>
+  <style>
+    .tok {
+      padding:4px 6px; margin:2px; border-radius:4px;
+      display:inline-block; font-family:monospace; background:#eee; cursor:pointer;
+      transition: background 0.2s; border: 2px solid transparent;
+    }
+    .clip {
+      border: 2px solid #005f00 !important;
+    }
+  </style>
+</head>
+<body>
+  <h3>Interactive Attention: Hover output → see input focus</h3>
+  <div><b>Input:</b> <span id="in"></span></div>
+  <div><b>Output:</b> <span id="out"></span></div>
+  <script>
+    const data = {"input": ["<sos>", "n", "e", "n", "u", "<eos>"], "output": ["న", "ె", "న", "ు", "<eos>"], "attentions": [[0.01, 0.01, 0.01, 0.96], [0.05, 0.02, 0.8, 0.13], [0.1, 0.6, 0.1, 0.2], [0.25, 0.25, 0.25, 0.25], [0.5, 0.1, 0.2, 0.2]]};
+    const inDiv  = document.getElementById("in");
+    const outDiv = document.getElementById("out");
+    const shownInputs = data.input.slice(1, -1);
+    shownInputs.forEach(function(ch,i){
+      const s=document.createElement("span");
+      s.textContent=ch; s.className="tok"; s.id="in-"+i;
+      inDiv.appendChild(s);
+    });
+    function resetInputColors() {
+      shownInputs.forEach(function(_,j){
+        var el = document.getElementById("in-"+j);
+        el.style.background = "#eee";
+        el.classList.remove("clip");
+      });
+    }
+    function attColor(v) {
+      // v in [0,1]; HSL: 120=green, 0=saturated; L=90% (light)→40% (dark)
+      // From very light to dark green
+      const lightness = 90 - 50*v; // v=0:90, v=1:40
+      return `hsl(120, 70%, ${lightness}%)`;
+    }
+    function topIndices(arr, k) {
+      let idx = arr.map((v,i)=>[v,i]);
+      idx.sort((a,b)=>b[0]-a[0]);
+      return idx.slice(0, k).map(x=>x[1]);
+    }
+    data.output.forEach(function(ch,i){
+      const s=document.createElement("span");
+      s.textContent=ch; s.className="tok";
+      s.onmouseenter=function(){
+        resetInputColors();
+        const att = data.attentions[i];
+        // compute top indices for clip
+        let clip_indices = [];
+        if (3 != null) {
+          clip_indices = topIndices(att, 3);
+        } else {
+          const m = Math.max(...att);
+          clip_indices = att.map((v,j)=>v>=(0.5*m)?j:null).filter(x=>x!==null);
+        }
+        att.forEach(function(v,j){
+          var el = document.getElementById("in-"+j);
+          el.style.background = attColor(v);  // <--- use color gradient
+          el.classList.remove("clip");
+        });
+        clip_indices.forEach(function(j){
+          document.getElementById("in-"+j).classList.add("clip");
+        });
+      };
+      s.onmouseleave=resetInputColors;
+      outDiv.appendChild(s);
+    });
+  </script>
+</body>
+</html>
+    

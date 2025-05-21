@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Attention Visualization</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .token {
+            padding: 4px 8px;
+            margin: 3px;
+            border-radius: 4px;
+            display: inline-block;
+            cursor: pointer;
+            background-color: #f0f0f0;
+        }
+        .highlight {
+            background-color: rgba(0, 200, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h2>🔍 Attention Visualization</h2>
+    <p><b>Hover over each output character to see which input tokens it attends to</b></p>
+    <div>
+        <strong>Input:</strong> <span id="input-tokens"></span>
+    </div>
+    <br>
+    <div>
+        <strong>Output:</strong> <span id="output-tokens"></span>
+    </div>
+
+    <script>
+        async function loadAndRender() {
+            const response = await fetch("attention_data.json");
+            const data = await response.json();
+
+            // ⚠️ Fix the alignment mismatch — use only the tokens actually attended over
+            const inputTokens = data.input.slice(1, -1); // i.e., ["n", "e", "n", "u"]
+            const outputTokens = data.output;
+            const attentions = data.attentions;
+
+            const inputDiv = document.getElementById("input-tokens");
+            const outputDiv = document.getElementById("output-tokens");
+
+            // Render input tokens
+            inputTokens.forEach((char, i) => {
+                const span = document.createElement("span");
+                span.className = "token";
+                span.textContent = char;
+                span.id = `input-${i}`;
+                inputDiv.appendChild(span);
+            });
+
+            // Render output tokens with hover interactivity
+            outputTokens.forEach((char, i) => {
+                const span = document.createElement("span");
+                span.className = "token";
+                span.textContent = char;
+
+                span.addEventListener("mouseover", () => {
+                    // Clear highlights
+                    inputTokens.forEach((_, j) => {
+                        document.getElementById(`input-${j}`).classList.remove("highlight");
+                    });
+
+                    // Highlight top attention tokens
+                    const attn = attentions[i];
+                    const maxVal = Math.max(...attn);
+
+                    attn.forEach((score, j) => {
+                        if (score >= 0.5 * maxVal) {
+                            document.getElementById(`input-${j}`).classList.add("highlight");
+                        }
+                    });
+                });
+
+                outputDiv.appendChild(span);
+            });
+        }
+
+        loadAndRender();
+    </script>
+</body>
+</html>

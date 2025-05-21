@@ -1,0 +1,54 @@
+
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Seq2Seq Attention Connectivity</title>
+    <style>
+      .tok {padding:4px 6px;margin:2px;border-radius:4px;
+             display:inline-block;font-family:monospace;
+             background:#eee;cursor:pointer}
+      .hi {background:rgba(0,200,0,.5)}
+    </style>
+    </head>
+    <body>
+    <h2>Interactive Attention (hover output &rarr; see input focus)</h2>
+    <div><b>Input:</b> <span id="in"></span></div><br>
+    <div><b>Output:</b> <span id="out"></span></div>
+
+    <script>
+      const data = {"input": ["<sos>", "h", "e", "l", "l", "o", "<eos>"], "output": ["హ", "ల", "ో", "<eos>"], "attentions": [[0.01, 0.05, 0.1, 0.1, 0.1, 0.6], [0.01, 0.2, 0.2, 0.3, 0.2, 0.09], [0.02, 0.1, 0.5, 0.25, 0.08, 0.05], [0, 0, 0, 0, 0, 1.0]]};
+      const inDiv  = document.getElementById("in");
+      const outDiv = document.getElementById("out");
+      // Draw input tokens (skip <sos>/<eos>)
+      const shownInputs = data.input.slice(1, -1);
+      shownInputs.forEach((ch,i)=>{
+        const s=document.createElement("span");
+        s.textContent=ch; s.className="tok"; s.id="in-"+i;
+        inDiv.appendChild(s);
+      });
+      // Draw output tokens
+      data.output.forEach((ch,i)=>{
+        const s=document.createElement("span");
+        s.textContent=ch; s.className="tok";
+        s.onmouseenter=()=>{
+          shownInputs.forEach((_,j)=>{
+            document.getElementById("in-"+j).classList.remove("hi");
+          });
+          const att = data.attentions[i];
+          const m = Math.max(...att);
+          att.forEach((v,j)=>{
+            if(v >= 0.5*m)
+              document.getElementById("in-"+j).classList.add("hi");
+          });
+        };
+        s.onmouseleave=()=>{
+          shownInputs.forEach((_,j)=>{
+            document.getElementById("in-"+j).classList.remove("hi");
+          });
+        };
+        outDiv.appendChild(s);
+      });
+    </script>
+    </body>
+    </html>
+    

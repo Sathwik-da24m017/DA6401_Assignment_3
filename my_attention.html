@@ -1,0 +1,70 @@
+
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <style>
+      .tok {padding:4px 6px;margin:2px;border-radius:4px;
+             display:inline-block;font-family:monospace;
+             background:#eee;cursor:pointer;transition: background 0.15s;}
+      .hi {background:rgba(0,200,0,.5);}
+    </style>
+    </head>
+    <body>
+    <h3>Interactive Attention (hover output → see input focus)</h3>
+    <div><b>Input:</b> <span id="in"></span></div><br>
+    <div><b>Output:</b> <span id="out"></span></div>
+
+    <script>
+      const data = {"input": ["<sos>", "n", "e", "n", "u", "<eos>"], "output": ["న", "ె", "న", "ు", "<eos>"], "attentions": [[0.01, 0.01, 0.01, 0.96], [0.05, 0.02, 0.8, 0.13], [0.1, 0.6, 0.1, 0.2], [0.25, 0.25, 0.25, 0.25], [0.5, 0.1, 0.2, 0.2]]};
+      const threshold = 0.1;
+
+      // Use only visible input tokens (skip <sos>/<eos>)
+      const shownInputs = data.input.slice(1, -1);
+      const inDiv  = document.getElementById("in");
+      const outDiv = document.getElementById("out");
+
+      // Helper for gradient color: higher attention = deeper green
+      function attColor(a) {
+        // a ∈ [0,1], interpolate between white and green
+        const g = Math.round(255 - 180 * a);
+        return `rgb(${g},255,${g})`;
+      }
+
+      // Draw input tokens (skip <sos>/<eos>)
+      shownInputs.forEach((ch,i)=>{
+        const s=document.createElement("span");
+        s.textContent=ch; s.className="tok"; s.id="in-"+i;
+        inDiv.appendChild(s);
+      });
+
+      // Draw output tokens
+      data.output.forEach((ch,i)=>{
+        const s=document.createElement("span");
+        s.textContent=ch; s.className="tok";
+
+        s.onmouseenter=()=>{
+          // clear previous
+          shownInputs.forEach((_,j)=>{
+            const el = document.getElementById("in-"+j);
+            el.style.background = "#eee";
+          });
+          // get attention vector for output token
+          const att = data.attentions[i] || [];
+          att.forEach((v,j)=>{
+            const el = document.getElementById("in-"+j);
+            if (v >= threshold) {
+              el.style.background = attColor(v);
+            }
+          });
+        };
+        s.onmouseleave=()=>{
+          shownInputs.forEach((_,j)=>{
+            document.getElementById("in-"+j).style.background = "#eee";
+          });
+        };
+        outDiv.appendChild(s);
+      });
+    </script>
+    </body>
+    </html>
+    
